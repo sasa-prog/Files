@@ -1,3 +1,5 @@
+package io.github.sasaprog;
+
 import java.util.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,25 +9,75 @@ import java.net.*;
 
 public class Main {
     public static void main(String[] args){
-        System.out.print("\n検索キーワード>>>");
         Scanner sc = new Scanner(System.in);
-        String keyword = sc.nextLine();
-        sc.close();
-        List<String> list = googleSearch(keyword);
-        list.stream().forEach(s -> {System.out.println(s);});
-        try {
-            ProcessBuilder pb = new ProcessBuilder("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe","https://www.google.com" + list.get(0));
-            pb.start();
-        }catch (IOException e) {
-            e.printStackTrace();
+        boolean isExit = false;
+        List<String> list = null;
+        while (!isExit) {
+            System.out.print("検索データの取得:1 全ての検索結果をブラウザで表示:2 検索結果を番号で表示:3 終了:4 >>>");
+            String command = sc.nextLine();
+            int num = 0;
+            try {
+                num = Integer.parseInt(command);
+            } catch (NumberFormatException e) {
+                System.err.println("1 ~ 4の整数を入力してください。");
+                continue;
+            }
+            
+            switch (num) {
+                case 1:
+                    System.out.print("検索キーワード >>>");
+                    String keyword = sc.nextLine();
+                    list = googleSearch(keyword); 
+                    System.out.println("データの取得完了");
+                    break;
+                case 2:
+                    if (list ==null) {
+                        System.out.println("先に検索をしてください。");
+                        break;
+                    }
+                    try {
+                        for (String s:list){
+                            ProcessBuilder pb = new ProcessBuilder("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",s);
+                            pb.start();
+                        }
+                    }catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case 3:
+                    if (list ==null) {
+                        System.out.println("先に検索をしてください。");
+                        break;
+                    }
+                    System.out.print("何番目の結果？>>>");
+                    int index = Integer.parseInt(sc.nextLine());
+                    try {
+                        ProcessBuilder pb = new ProcessBuilder("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", list.get(index));
+                        pb.start();
+                    }catch (IOException e) {
+                        System.err.println("エラー:" + e.getMessage());
+                    }
+                    break;
+                case 4:
+                    isExit = true;
+            }
         }
+        sc.close();
+        System.out.println("終了します。");
+        
     }
+    //Googleでキーワードを検索するメソッド
+    /**
+     * Googleでキーワードを検索するメソッド
+     * @param keyword 検索キーワード
+     * @return 検索結果のリンクのリスト
+     */
     static List<String> googleSearch(String keyword) {
         List<String> list = new ArrayList<>();
         URL u = null;
         BufferedReader br = null;
         try {
-            u = new URL(String.format("https://google.com/search?q=%s&ie=utf-8", keyword));
+            u = new URL(String.format("https://google.com/search?q=%s", keyword));
             URLConnection conn = u.openConnection();
             conn.setRequestProperty("User-agent","Mozilla/5.0");  
             br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -47,6 +99,11 @@ public class Main {
         List<String> results = analyzeResults(list);
         return results;
     }
+    /**
+     * HTMLを分析してリンク一覧を取得するメソッド
+     * @param list 検索結果のHTMLの各行
+     * @return　リンク一覧
+     */
     static List<String> analyzeResults(List<String> list) {
         StringTokenizer st =null;
         ArrayList<String> results = new ArrayList<>();
@@ -68,6 +125,12 @@ public class Main {
                 }
             }
         }
+        for (int i = 0; i< results.size();i++) {
+            results.set(i, results.get(i).substring(results.get(i).indexOf("h"), results.get(i).indexOf("&")));
+        }
         return results;
+    }
+    static List<String> search(String keyword) {
+        return googleSearch(keyword);
     }
 }
