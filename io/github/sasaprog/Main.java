@@ -28,10 +28,11 @@ public class Main {
                     System.out.print("検索キーワード >>>");
                     String keyword = sc.nextLine();
                     list = googleSearch(keyword); 
-                    System.out.println("データの取得完了");
+                    System.out.println(list.size() + "件のデータを取得完了");
                     break;
                 case 2:
                     if (list ==null) {
+			//TODO: 「先に検索データを取得してください」に変更
                         System.out.println("先に検索をしてください。");
                         break;
                     }
@@ -52,7 +53,7 @@ public class Main {
                     System.out.print("何番目の結果？>>>");
                     int index = Integer.parseInt(sc.nextLine());
                     try {
-                        ProcessBuilder pb = new ProcessBuilder("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", list.get(index));
+                        ProcessBuilder pb = new ProcessBuilder("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", list.get(index - 1));
                         pb.start();
                     }catch (IOException e) {
                         System.err.println("エラー:" + e.getMessage());
@@ -133,3 +134,4 @@ public class Main {
     static List<String> search(String keyword) {
         return googleSearch(keyword);
     }
+}
